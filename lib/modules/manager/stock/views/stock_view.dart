@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/stock_controller.dart';
 import '../../../appColors/appColors.dart';
-import 'inventory_tab.dart';
+import 'produits_tab.dart';
 import 'mouvement_tab.dart';
 import 'sessions_tab.dart';
 
@@ -41,7 +41,7 @@ class StockView extends GetView<StockController> {
         ),
         body: TabBarView(
           children: [
-            const InventoryTab(),
+            const ProduitsTab(),
             GetBuilder<MouvementController>(
               init: MouvementController(),
               builder: (_) => const MouvementTab(),

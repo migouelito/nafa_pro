@@ -302,6 +302,96 @@ Future<List<Map<String, dynamic>>?> getProduits() async {
   }
 }
 
+// ======================== Détail d'un produit ========================
+Future<Map<String, dynamic>?> getProduitDetail(String id) async {
+  final token = await getAccessToken();
+  if (token == null) return null;
+
+  try {
+    final uri = Uri.parse('$baseUrl/api/produit/$id/retreive/');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("Détails du produit récupérés : $data");
+      return data;
+    } else {
+      print('Erreur serveur : ${response.statusCode} => ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération du détail produit : $e');
+    return null;
+  }
+}
+
+
+Future<List<Map<String, dynamic>>?> getStocks() async {
+  final token = await getAccessToken();
+  if (token == null) return null;
+  try {
+    final uri = Uri.parse('$baseUrl/api/stock/list/');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+
+      final magasins = data.map<Map<String, dynamic>>((e) => e as Map<String, dynamic>).toList();
+      print("Mouvements récupérés : $magasins");
+      return magasins;
+    } else {
+      print('Erreur serveur : ${response.statusCode} => ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération des mouvements: $e');
+    return null;
+  }
+}
+
+
+Future<bool> createMouvement(Map<String, dynamic> mouvementData) async {
+  final token = await getAccessToken();
+  if (token == null) return false;
+
+  try {
+    final uri = Uri.parse('$baseUrl/api/mouvement/create/');
+
+    final response = await http.post(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: json.encode(mouvementData),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('Mouvement créé avec succès : ${response.body}');
+      return true;
+    } else {
+      print('Erreur serveur : ${response.statusCode} => ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    print('Erreur lors de la création du mouvement: $e');
+    return false;
+  }
+}
 
 Future<List<Map<String, dynamic>>?> getMouvements() async {
   final token = await getAccessToken();
@@ -364,67 +454,6 @@ Future<Map<String, dynamic>?> getMouvementDetail(String idMouvement) async {
   }
 }
 
-Future<List<Map<String, dynamic>>?> getStocks() async {
-  final token = await getAccessToken();
-  if (token == null) return null;
-  try {
-    final uri = Uri.parse('$baseUrl/api/stock/list/');
-
-    final response = await http.get(
-      uri,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-
-      final magasins = data.map<Map<String, dynamic>>((e) => e as Map<String, dynamic>).toList();
-      print("Mouvements récupérés : $magasins");
-      return magasins;
-    } else {
-      print('Erreur serveur : ${response.statusCode} => ${response.body}');
-      return null;
-    }
-  } catch (e) {
-    print('Erreur lors de la récupération des mouvements: $e');
-    return null;
-  }
-}
-
-
-Future<bool> createMouvement(Map<String, dynamic> mouvementData) async {
-  final token = await getAccessToken();
-  if (token == null) return false;
-
-  try {
-    final uri = Uri.parse('$baseUrl/api/mouvement/create/');
-
-    final response = await http.post(
-      uri,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: json.encode(mouvementData),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print('Mouvement créé avec succès : ${response.body}');
-      return true;
-    } else {
-      print('Erreur serveur : ${response.statusCode} => ${response.body}');
-      return false;
-    }
-  } catch (e) {
-    print('Erreur lors de la création du mouvement: $e');
-    return false;
-  }
-}
-
-
 Future<bool> updateMouvement(String id, Map<String, dynamic> mouvementData) async {
   final token = await getAccessToken();
   if (token == null) return false;
@@ -433,7 +462,7 @@ Future<bool> updateMouvement(String id, Map<String, dynamic> mouvementData) asyn
     // CORRECTION : Injection de l'ID réel dans l'URL
     final uri = Uri.parse('$baseUrl/api/mouvement/$id/update/');
 
-    final response = await http.put( // Utilisation de PUT pour la modification
+    final response = await http.put( 
       uri,
       headers: {
         "Content-Type": "application/json",

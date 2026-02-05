@@ -19,4 +19,5 @@ abstract class Routes {
   static const DETAILMOUVEMENT='/manager/mouvement/detail';
   static const SESSION='/manager/session';
   static const DETAILSESSION='/manager/session/detail';
+  static const DETAILPRODUIT='/manager/detailproduit';
 }

@@ -1,75 +1,127 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/stock_controller.dart';
+import '../../../services/apiServices.dart';
+import '../../../loading/loading.dart';
+import '../../../alerte/alerte.dart';
+import '../../../appColors/appColors.dart';
 
 class SessionController extends GetxController {
-  final StockController stockController = Get.find<StockController>();
+  final apiService = ApiService();
   var isLoading = false.obs;
-  var counters = <String, int>{}.obs;
+  
+  var sessionsList = <Map<String, dynamic>>[].obs;
+  var chargementStock = <Map<String, dynamic>>[].obs;
 
-  // --- LOGIQUE DE FILTRE PAR DROPDOWN ---
+  var countersRecharge = <String, TextEditingController>{}.obs;
+  var countersEchange = <String, TextEditingController>{}.obs;
+  var countersVente = <String, TextEditingController>{}.obs;
+
+  final drivers = ["Amadou O. (TVS King)", "Seydou K. (Bajaj)", "Moussa T. (TVS King)"].obs;
+  var selectedDriver = "Amadou O. (TVS King)".obs;
   var selectedLivreur = "TOUS LES LIVREURS".obs;
-
-  List<Map<String, dynamic>> get filteredSessions {
-    if (selectedLivreur.value == "TOUS LES LIVREURS") {
-      return stockController.sessionsList;
-    } else {
-      return stockController.sessionsList.where((session) {
-        return session['agent_livraison_name'] == selectedLivreur.value;
-      }).toList();
-    }
-  }
-
-  void updateSelectedLivreur(String name) => selectedLivreur.value = name;
-  // --------------------------------------
 
   @override
   void onReady() {
     super.onReady();
     loadSessions();
+    getAvailableStock();
   }
 
   Future<void> loadSessions() async {
     try {
       isLoading(true);
-      await stockController.getSessions();
+      final response = await apiService.getSession();
+      print("=======================$response");
+      if (response != null && response is List) {
+        sessionsList.assignAll(List<Map<String, dynamic>>.from(response));
+      }
     } catch (e) {
-      print("Erreur chargement sessions: $e");
+      print("Erreur sessions: $e");
     } finally {
       isLoading(false);
     }
   }
 
-  void prepareNewSession() {
-    counters.clear();
-    for (var item in stockController.chargementStock) {
-      String key = "${item.brand}_${item.type}";
-      counters[key] = 0;
+  Future<void> getAvailableStock() async {
+    try {
+      final response = await apiService.getStocks();
+      if (response != null && response is List) {
+        chargementStock.assignAll(List<Map<String, dynamic>>.from(response));
+      }
+    } catch (e) {
+      print("Erreur stock: $e");
     }
   }
 
-  void increment(String key) => counters[key] = (counters[key] ?? 0) + 1;
-  void decrement(String key) {
-    if ((counters[key] ?? 0) > 0) counters[key] = counters[key]! - 1;
+  List<Map<String, dynamic>> get filteredSessions {
+    if (selectedLivreur.value == "TOUS LES LIVREURS") {
+      return sessionsList.toList();
+    } else {
+      return sessionsList.where((s) => s['agent_livraison_name'] == selectedLivreur.value).toList();
+    }
+  }
+
+  void updateSelectedLivreur(String name) => selectedLivreur.value = name;
+
+  void prepareNewSession() {
+    countersRecharge.clear();
+    countersEchange.clear();
+    countersVente.clear();
+
+    for (var item in chargementStock) {
+      String id = item['id'].toString();
+      countersRecharge[id] = TextEditingController(text: "0");
+      countersEchange[id] = TextEditingController(text: "0");
+      countersVente[id] = TextEditingController(text: "0");
+    }
   }
 
   Future<void> submitSession() async {
     List<Map<String, dynamic>> itemsToShip = [];
-    counters.forEach((key, quantity) {
-      if (quantity > 0) {
-        var parts = key.split('_');
-        try {
-          var itemObj = stockController.chargementStock.firstWhere(
-            (i) => i.brand == parts[0] && i.type == parts[1]
-          );
-          itemsToShip.add({"stock": itemObj.id, "quantite_ouverture": quantity});
-        } catch (e) { print("Erreur item: $e"); }
-      }
-    });
 
-    if (itemsToShip.isNotEmpty) {
-      if (Get.isBottomSheetOpen ?? false) Get.back();
-      await stockController.createSession(items: itemsToShip);
-      await loadSessions();
+    for (var item in chargementStock) {
+      String id = item['id'].toString();
+      int qR = int.tryParse(countersRecharge[id]?.text ?? "0") ?? 0;
+      int qE = int.tryParse(countersEchange[id]?.text ?? "0") ?? 0;
+      int qV = int.tryParse(countersVente[id]?.text ?? "0") ?? 0;
+
+      // Validation stricte par rapport au stock réel
+      int maxR = int.tryParse(item['quantite_recharge_charger']?.toString() ?? "0") ?? 0;
+      int maxE = int.tryParse(item['quantite_echange_charger']?.toString() ?? "0") ?? 0;
+      int maxV = int.tryParse(item['quantite_vente']?.toString() ?? "0") ?? 0;
+
+      if(qR > maxR || qE > maxE || qV > maxV) {
+        Alerte.show(title: "Erreur Stock", message: "Quantité saisie supérieure au stock pour ${item['produit_nom']}", color: Colors.red);
+        return;
+      }
+
+      if (qR > 0 || qE > 0 || qV > 0) {
+        itemsToShip.add({
+          "stock": id,
+          "quantite_ouverture_recharge": qR,
+          "quantite_ouverture_echange": qE,
+          "quantite_ouverture_vente": qV
+        });
+      }
+    }
+
+    if (itemsToShip.isEmpty) {
+      Alerte.show(title: "Attention", message: "Saisissez au moins une quantité", imagePath: "assets/images/error.png", color: Colors.red);
+      return;
+    }
+
+    try {
+      LoadingModal.show();
+      final bool success = await apiService.createSession(items: itemsToShip);
+      LoadingModal.hide();
+      if (success) {
+        if (Get.isBottomSheetOpen ?? false) Get.back();
+        Alerte.show(title: "Succès", message: "Chargement validé",imagePath: "assets/images/success.png", color: AppColors.generalColor);
+        await loadSessions();
+      }
+    } catch (e) {
+      LoadingModal.hide();
+      Alerte.show(title: "Erreur", message: "Échec de l'envoi", color: Colors.red);
     }
   }
 }

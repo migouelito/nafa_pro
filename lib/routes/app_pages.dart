@@ -35,6 +35,8 @@ import '../modules/manager/stock/mouvement_detail/mouvement_detail_view.dart';
 import '../modules/manager/stock/mouvement_detail/mouvement_detail_binding.dart';
 import '../modules/manager/stock/detail_session/detail_session_view.dart';
 import '../modules/manager/stock/detail_session/detail_session_binding.dart';
+import '../modules/manager/stock/details_produit/detail_produit_binding.dart';
+import '../modules/manager/stock/details_produit/detail_produit_view.dart';
 
 class AppPages {
   static const INITIAL = Routes.LOGIN;
@@ -61,6 +63,7 @@ class AppPages {
     GetPage(name: Routes.DETAILMOUVEMENT, page: () => const MouvementDetailView(), binding:MouvementDetailBinding()),
     GetPage(name: Routes.SESSION, page: () => const SessionsTab(), binding:SessionBinding()),
     GetPage(name: Routes.DETAILSESSION, page: () => const DetailSessionView(), binding:DetailSessionBinding()),
+    GetPage(name: Routes.DETAILPRODUIT, page: () => const ProduitDetailView(), binding:ProduitDetailBinding()),
 
 
   ];

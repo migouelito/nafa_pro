@@ -16,7 +16,7 @@ class MouvementController extends GetxController {
 
   // --- LOGIQUE DE FILTRE ---
   var searchQuery = "".obs;
-  var selectedTypeFilter = "TOUS".obs; // Filtre par type (Dropdown)
+  var selectedTypeFilter = "TOUS LES MOUVEMENTS".obs; 
 
   List<StockMovement> get filteredMouvements {
     return movementHistory.where((m) {
@@ -27,7 +27,7 @@ class MouvementController extends GetxController {
       
       // Filtre par type Dropdown
       bool matchesType = true;
-      if (selectedTypeFilter.value != "TOUS") {
+      if (selectedTypeFilter.value != "TOUS LES MOUVEMENTS") {
         matchesType = m.type.toUpperCase() == selectedTypeFilter.value;
       }
 
@@ -68,36 +68,37 @@ class MouvementController extends GetxController {
     } catch (e) { print(e); }
   }
 
-  Future<void> getMouvements() async {
-    try {
-      final response = await apiService.getMouvements(); 
-      if (response != null && response is List) {
-        List<StockMovement> fetchedMoves = response.map((item) {
-          Color moveColor;
-          String typeStr = (item['type'] ?? "INCONNU").toUpperCase();
+Future<void> getMouvements() async {
+  try {
+    final response = await apiService.getMouvements(); 
+    if (response != null && response is List) {
+      List<StockMovement> fetchedMoves = response.map((item) {
+        Color moveColor;
+        String typeStr = (item['type'] ?? "INCONNU").toUpperCase();
 
-          switch (typeStr) {
-            case 'TRANSFERT': moveColor = Colors.blueGrey; break;
-            case 'APPROVISIONNEMENT': moveColor = Colors.orange; break;
-            case 'REMBOURSEMENT': moveColor = Colors.redAccent; break;
-            default: moveColor = Colors.blue;
-          }
+        switch (typeStr) {
+          case 'TRANSFERT': moveColor = Colors.blueGrey; break;
+          case 'APPROVISIONNEMENT': moveColor = Colors.green; break;
+          case 'REMBOURSEMENT': moveColor = Colors.red; break;
+          default: moveColor = Colors.blue;
+        }
 
-          return StockMovement(
-            item['id']?.toString() ?? "", 
-            typeStr,
-            "De: ${item['magasin_name'] ?? 'Inconnu'}${item['destination_name'] != null ? ' Vers: ${item['destination_name']}' : ''}",
-            item['produit_name'] ?? "",
-            moveColor,
-            date: DateTime.tryParse(item['modified'] ?? "") ?? DateTime.now(),
-          );
-        }).toList();
-        
-        fetchedMoves.sort((a, b) => b.date.compareTo(a.date));
-        movementHistory.assignAll(fetchedMoves);
-      }
-    } catch (e) { print("Erreur getMouvements: $e"); }
-  }
+        return StockMovement(
+          item['id']?.toString() ?? "", 
+          typeStr,
+          item['magasin_source_name'] ?? 'Inconnu',
+          item['produit_name'] ?? "",
+          moveColor,
+          destinationName: item['magasin_destination_name'],
+          date: DateTime.tryParse(item['modified'] ?? "") ?? DateTime.now(),
+        );
+      }).toList();
+      
+      fetchedMoves.sort((a, b) => b.date.compareTo(a.date));
+      movementHistory.assignAll(fetchedMoves);
+    }
+  } catch (e) { print("Erreur getMouvements: $e"); }
+}
 
   void prepareForm({required String initialEntity}) {
     selectedEntity.value = initialEntity;
@@ -154,7 +155,15 @@ class StockMovement {
   final String id;
   final DateTime date;
   final String type, target, description;
+  final String? destinationName; 
   final Color color;
-  StockMovement(this.id, this.type, this.target, this.description, this.color, {DateTime? date}) 
-      : this.date = date ?? DateTime.now();
+
+  StockMovement(
+    this.id, 
+    this.type, 
+    this.target, 
+    this.description, 
+    this.color, 
+    {this.destinationName, DateTime? date} 
+  ) : this.date = date ?? DateTime.now();
 }

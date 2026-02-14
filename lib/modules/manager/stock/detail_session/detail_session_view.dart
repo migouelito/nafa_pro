@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../modules/appColors/appColors.dart'; 
 import '../../../loading/loading.dart';
 import 'detail_session_controller.dart';
+import '../../../services/urlBase.dart';
 
 class DetailSessionView extends GetView<DetailSessionController> {
   const DetailSessionView({super.key});
@@ -95,55 +96,120 @@ class DetailSessionView extends GetView<DetailSessionController> {
     String dateCloseStr = _formatRealDate(s['close_date']);
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.generalColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: AppColors.generalColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Column(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: AppColors.generalColor,
+    borderRadius: BorderRadius.circular(24), // Bordures plus arrondies
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.generalColor.withOpacity(0.3), 
+        blurRadius: 15, 
+        offset: const Offset(0, 8)
+      )
+    ],
+  ),
+  child: Column(
+    children: [
+      // --- Ligne du haut : Badge de Statut ---
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: isClosed ? Colors.orange.withOpacity(0.2) : Colors.green.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
+              color: isClosed ? AppColors.Orange.withOpacity(0.2) : Colors.green.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              isClosed ? "SESSION CLÔTURÉE" : "SESSION ACTIVE",
-              style: TextStyle(color: isClosed ? Colors.orange : Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold),
+              isClosed ? "SESSION CLÔTURÉE" : "SESSION EN COURS",
+              style: TextStyle(
+                color: isClosed ? AppColors.Orange : Colors.greenAccent, 
+                fontSize: 10, 
+                fontWeight: FontWeight.w900
+              ),
             ),
           ),
-          const SizedBox(height: 12),
-          Text(s['agent_livraison_name'] ?? "Livreur inconnu", 
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.login, color: Colors.white70, size: 14),
-              const SizedBox(width: 8),
-              Text("Début: $dateOpenStr", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
-            ],
-          ),
-          if (isClosed) ...[
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.logout, color: Colors.white70, size: 14),
-                const SizedBox(width: 8),
-                Text("Fin: $dateCloseStr", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
-              ],
-            ),
-          ],
         ],
       ),
-    );
+
+      const SizedBox(height: 10),
+
+      Row(
+        children: [
+          // Icône de véhicule
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.local_shipping, 
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+
+          // Colonne des données
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s['agent_livraison_name'] ?? "Livreur inconnu",
+                  style: const TextStyle(
+                    color: Colors.white, 
+                    fontSize: 16, 
+                    fontWeight: FontWeight.w900
+                  ),
+                ),
+                const SizedBox(height: 6),
+                
+                // Horaires
+                Row(
+                  children: [
+                    const Icon(Icons.access_time_filled, color: Colors.white70, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Début: $dateOpenStr", 
+                      style: const TextStyle(color: Colors.white, fontSize: 11)
+                    ),
+                  ],
+                ),
+
+                if (isClosed) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.history, color: Colors.white70, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Fin: $dateCloseStr", 
+                        style: const TextStyle(color: Colors.white, fontSize: 11)
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+);
+    
   }
 
   Widget _buildProductCard(Map<String, dynamic> item) {
+    // Gestion de l'image
+    final String? imagePath = item['produit_image'];
+    final baseUrl = ApiUrlPage.baseUrl; 
+    final String fullImageUrl = imagePath != null ? "$baseUrl$imagePath" : "";
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -155,8 +221,36 @@ class DetailSessionView extends GetView<DetailSessionController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(item['produit_nom'] ?? "Produit #${item['stock'].toString().substring(0, 5)}", 
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.blueGrey)),
+          Row(
+            children: [
+              Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: imagePath != null
+                      ? Image.network(
+                          fullImageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => 
+                              Icon(PhosphorIcons.package(), color: Colors.grey),
+                        )
+                      : Icon(PhosphorIcons.package(), color: Colors.grey),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  item['produit_name'] ?? "Produit inconnu", 
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.blueGrey),
+                ),
+              ),
+            ],
+          ),
           const Divider(height: 24),
           
           _rowTitle("ÉTAT DU CHARGEMENT (OUVERTURE)"),
@@ -177,9 +271,9 @@ class DetailSessionView extends GetView<DetailSessionController> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _buildStatCard("RECH.", controller.formatQty(item['quantite_cloture_recharge_charger']), AppColors.generalColor, PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill))),
+              Expanded(child: _buildStatCard("RECHARGE", controller.formatQty(item['quantite_cloture_recharge_charger']), AppColors.generalColor, PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill))),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatCard("ECH.", controller.formatQty(item['quantite_cloture_echange_charger']), AppColors.generalColor, PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill))),
+              Expanded(child: _buildStatCard("ECHANGE", controller.formatQty(item['quantite_cloture_echange_charger']), AppColors.generalColor, PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill))),
               const SizedBox(width: 8),
               Expanded(child: _buildStatCard("VENTE", controller.formatQty(item['quantite_cloture_vente_charger']), AppColors.generalColor, PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill))),
             ],
@@ -191,11 +285,11 @@ class DetailSessionView extends GetView<DetailSessionController> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _buildStatCard("V. RECH", controller.formatQty(item['quantite_cloture_recharge_vide']), Colors.red, PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill))),
+              Expanded(child: _buildStatCard("RECHARGE", controller.formatQty(item['quantite_cloture_recharge_vide']), Colors.red, PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill))),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatCard("V. ECH", controller.formatQty(item['quantite_cloture_echange_vide']), Colors.red, PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill))),
+              Expanded(child: _buildStatCard("ECHANGE", controller.formatQty(item['quantite_cloture_echange_vide']), Colors.red, PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill))),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatCard("V. VENTE", controller.formatQty(item['quantite_cloture_vente_vide']), Colors.red, PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill))),
+              Expanded(child: _buildStatCard("VENTE", controller.formatQty(item['quantite_cloture_vente_vide']), Colors.red, PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill))),
             ],
           ),
         ],
@@ -272,6 +366,12 @@ class DetailSessionView extends GetView<DetailSessionController> {
   }
 
   Widget _buildClotureInputRow(ClotureItemInput item, dynamic rawItem) {
+    // Récupération sécurisée du nom et de l'image depuis les données brutes
+    final String productName = rawItem['produit_name'] ?? "Produit sans nom";
+    final String? imagePath = rawItem['produit_image'];
+    final baseUrl = ApiUrlPage.baseUrl;
+    final String fullImageUrl = imagePath != null ? "$baseUrl$imagePath" : "";
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
@@ -284,7 +384,46 @@ class DetailSessionView extends GetView<DetailSessionController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.blueGrey)),
+          // --- ZONE ENTÊTE : IMAGE ET NOM ---
+          Row(
+            children: [
+              Container(
+                height: 45,
+                width: 45,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: imagePath != null
+                      ? Image.network(
+                          fullImageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => 
+                              Icon(PhosphorIcons.package(), color: Colors.grey, size: 20),
+                        )
+                      : Icon(PhosphorIcons.package(), color: Colors.grey, size: 20),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  productName, // Utilisation directe du nom provenant de rawItem
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900, 
+                    fontSize: 14, 
+                    color: Colors.blueGrey,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 15),
+          const Divider(height: 1, thickness: 0.5),
           const SizedBox(height: 15),
           
           _rowTitle("UNITÉS PLEINES"),
@@ -295,7 +434,6 @@ class DetailSessionView extends GetView<DetailSessionController> {
               const SizedBox(width: 8),
               Expanded(child: _qtyInput(PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill), "Échange", item.qPleineEchange, controller.formatQty(rawItem['quantite_ouverture_echange']))),
               const SizedBox(width: 8),
-              // VENTE : MODIFIABLE ET REMPLIE PAR LES DONNÉES RÉELLES
               Expanded(child: _qtyInput(PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill), "Vente", item.qPleineVente, controller.formatQty(rawItem['quantite_ouverture_vente']))),
             ],
           ),
@@ -307,7 +445,6 @@ class DetailSessionView extends GetView<DetailSessionController> {
               Expanded(child: _qtyInput(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill), "Rech.", item.qVideRecharge, controller.formatQty(rawItem['quantite_ouverture_recharge']))),
               const SizedBox(width: 8),
               Expanded(child: _qtyInput(PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill), "Ech.", item.qVideEchange, controller.formatQty(rawItem['quantite_ouverture_echange']))),
-              // VENTE : MODIFIABLE ET REMPLIE PAR LES DONNÉES RÉELLES
               Expanded(child: _qtyInput(PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill), "Vente", item.qVideVente, "0")),
             ],
           ),

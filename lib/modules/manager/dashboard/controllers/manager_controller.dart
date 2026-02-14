@@ -18,16 +18,13 @@ class ManagerController extends GetxController {
   // KPI FINANCIERS
   var cashBalance = 1250000.obs;
   var dailyBottleSales = 142.obs;
-  var dailyTarget = 200; // Objectif : 200 bouteilles/jour
-
+  var dailyTarget = 200; 
   // ALERTES
   var pendingOrders = 3.obs;
   var activeIssues = 1.obs;
-  
   // FLOTTE
   var activeTricycles = 5.obs;
   var totalTricycles = 8.obs;
-
   // STOCK CRITIQUE (Exemple : Ce qu'il faut commander d'urgence)
   var lowStockItems = <Map<String, String>>[
     {"name": "Total B6", "qty": "Reste 5"},

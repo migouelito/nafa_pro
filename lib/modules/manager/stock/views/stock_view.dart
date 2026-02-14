@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/stock_controller.dart';
 import '../../../appColors/appColors.dart';
-import 'produits_tab.dart';
-import 'mouvement_tab.dart';
-import 'sessions_tab.dart';
-
-import '../views/mouvement_controller.dart';
-import '../views/session_controler.dart';
-
+import '../mouvement/mouvement_tab.dart';
+import '../session/sessions_tab.dart';
+import '../mouvement/mouvement_controller.dart';
+import '../session/session_controler.dart';
+import '../magasin_stock/magasin_stock_tab.dart';
+import '../magasin_stock/magasin_stock_controller.dart';
 
 class StockView extends GetView<StockController> {
   const StockView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // On rafraîchit les produits au démarrage via le controller principal
     WidgetsBinding.instance.addPostFrameCallback((_) => controller.getProduits());
 
     return DefaultTabController(
@@ -24,33 +22,42 @@ class StockView extends GetView<StockController> {
         backgroundColor: const Color(0xFFF8F9FD),
         appBar: AppBar(
           title: const Text("GESTION STOCK", 
-            style: TextStyle(letterSpacing: 1.2, fontWeight: FontWeight.w800)),
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1.2)),
           backgroundColor: AppColors.generalColor,
           foregroundColor: Colors.white,
-          bottom: const TabBar(
-            indicatorColor: Colors.amber,
+          bottom:  TabBar(
+            indicatorColor: AppColors.Orange,
             unselectedLabelColor: Colors.white,
             indicatorWeight: 3,
             labelColor: Colors.white,
             tabs: [
-              Tab(text: "PRODUIT"), 
+              Tab(text: "STOK"), 
+              // Tab(text: "PRODUIT"), 
               Tab(text: "MOUVEMENT"), 
               Tab(text: "SESSIONS")
             ],
           ),
         ),
         body: TabBarView(
-          children: [
-            const ProduitsTab(),
-            GetBuilder<MouvementController>(
-              init: MouvementController(),
-              builder: (_) => const MouvementTab(),
-            ),
-            GetBuilder<SessionController>(
-              init: SessionController(),
-              builder: (_) => const SessionsTab(),
-            ),
-          ],
+        children: [
+        GetBuilder<MagasinStockController>(
+          init: MagasinStockController(),
+          builder: (_) => const MagasinStockTab(),
+        ),
+        // GetBuilder<StockController>(
+        //   init: StockController(),
+        //   builder: (_) => const ProduitsTab(),
+        // ),
+        GetBuilder<MouvementController>(
+          init: MouvementController(),
+          builder: (_) => const MouvementTab(),
+        ),
+        GetBuilder<SessionController>(
+          init: SessionController(),
+          builder: (_) => const SessionsTab(),
+        ),
+      ],
+
         ),
       ),
     );

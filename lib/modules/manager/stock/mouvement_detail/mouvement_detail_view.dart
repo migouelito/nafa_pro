@@ -5,7 +5,7 @@ import 'package:nafa_pro/modules/appColors/appColors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'mouvement_detail_controller.dart';
 import '../../../loading/loading.dart';
-import '../views/mouvement_controller.dart';
+import '../mouvement/mouvement_controller.dart';
 
 class MouvementDetailView extends GetView<MouvementDetailController> {
   const MouvementDetailView({super.key});
@@ -35,63 +35,100 @@ class MouvementDetailView extends GetView<MouvementDetailController> {
         final String agentPhone = d['agent_details']?['username'] ?? "N/A";
         final String? destName = d['magasin_destination_name'];
 
-        return SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- HEADER ---
-              _buildHeaderCard(d, displayType),
-              const SizedBox(height: 20), 
-              
-              _buildSectionHeader("Détails des Quantités", PhosphorIcons.package()),
-              
-              _buildModernTile("Recharge Pleine", d['quantite_recharge_charger'], Colors.green, PhosphorIcons.package()),
-              _buildModernTile("Recharge Vide", d['quantite_recharge_vide'], Colors.orange, PhosphorIcons.recycle()),
-              _buildModernTile("Ventes réalisées", d['quantite_vente'], Colors.blue, PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill)),
-              _buildModernTile("Échange (Chargé)", d['quantite_echange_charger'], Colors.teal, PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill)),
-              _buildModernTile("Échange (Vide)", d['quantite_echange_vide'], Colors.blueGrey, PhosphorIcons.minusCircle(PhosphorIconsStyle.fill)),
-              
-              const SizedBox(height: 20),
-              _buildSectionHeader("Traçabilité & Acteurs", PhosphorIcons.shieldCheck()),
-              
-              _buildAgentCard(d, agentName, agentPhone, destName),
-            ],
-          ),
-        );
-      }),
-      floatingActionButton: Obx(() {
-        if (controller.mouvement.value == null) return const SizedBox();
-        final data = controller.mouvement.value!;
-        
         return Column(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FloatingActionButton(
-              heroTag: "fabReverse",
-              mini: true,
-              backgroundColor: Colors.red,
-              onPressed: () {
-                _prepareUpdate(mainController, data);
-                _openEditModal("REMBOURSEMENT", Colors.red, mainController);
-              },
-              child: Icon(PhosphorIcons.xCircle(), color: Colors.white, size: 20),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- HEADER ---
+                    _buildHeaderCard(d, displayType),
+                    const SizedBox(height: 20), 
+                    
+                    _buildSectionHeader("Détails des Quantités", PhosphorIcons.package()),
+                    
+                    _buildModernTile("Recharge Pleine", d['quantite_recharge_charger'], Colors.green, PhosphorIcons.package()),
+                    _buildModernTile("Recharge Vide", d['quantite_recharge_vide'], Colors.orange, PhosphorIcons.recycle()),
+                    _buildModernTile("Ventes réalisées", d['quantite_vente'], Colors.blue, PhosphorIcons.shoppingCart(PhosphorIconsStyle.fill)),
+                    _buildModernTile("Échange (Chargé)", d['quantite_echange_charger'], Colors.teal, PhosphorIcons.arrowsLeftRight(PhosphorIconsStyle.fill)),
+                    _buildModernTile("Échange (Vide)", d['quantite_echange_vide'], Colors.blueGrey, PhosphorIcons.minusCircle(PhosphorIconsStyle.fill)),
+                    
+                    const SizedBox(height: 20),
+                    _buildSectionHeader("Traçabilité & Acteurs", PhosphorIcons.shieldCheck()),
+                    
+                    _buildAgentCard(d, agentName, agentPhone, destName),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: "fabEdit",
-              mini: true,
-              backgroundColor: AppColors.generalColor,
-              onPressed: () {
-                _prepareUpdate(mainController, data);
-                _openEditModal(data['type'] ?? "MODIFICATION", AppColors.generalColor, mainController);
-              },
-              child: Icon(PhosphorIcons.pencilSimple(), color: Colors.white, size: 20),
-            ),
+            
+            // --- BOUTONS D'ACTION FIXES EN BAS ---
+            _buildBottomActionButtons(mainController, d),
           ],
         );
       }),
+    );
+  }
+
+  // --- NOUVEAU : BOUTONS LONGS EN BAS ---
+  Widget _buildBottomActionButtons(MouvementController mainCtrl, Map<String, dynamic> data) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Bouton Modifier (AppColors.generalColor)
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _prepareUpdate(mainCtrl, data);
+                  _openEditModal(data['type'] ?? "MODIFICATION", AppColors.generalColor, mainCtrl);
+                },
+                icon:  Icon(PhosphorIcons.pencilSimple(), size: 24),
+                label: const Text("MODIFIER LE MOUVEMENT", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.generalColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Bouton Annuler/Remboursement (Rouge)
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _prepareUpdate(mainCtrl, data);
+                  _openEditModal("REMBOURSEMENT", Colors.red, mainCtrl);
+                },
+                icon:  Icon(PhosphorIcons.xCircle(), size: 22),
+                label: const Text("REMBOURSER LE MOUVEMENT", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade600,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -225,8 +262,6 @@ class MouvementDetailView extends GetView<MouvementDetailController> {
       ]
     ),
   );
-
-  // --- LOGIQUE DE PRÉPARATION & MODAL (STYLE ORIGINAL CONSERVÉ) ---
 
   void _prepareUpdate(MouvementController mainCtrl, Map<String, dynamic> data) {
     mainCtrl.selectedStockId.value = data['stock']?.toString() ?? "";

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:nafa_pro/modules/appColors/appColors.dart';
 import 'package:nafa_pro/modules/driver/dashboard/controllers/driver_controller.dart';
+import '../../../appColors/appColors.dart';
 
 class DriverView extends GetView<DriverController> {
   const DriverView({super.key});
@@ -60,7 +62,7 @@ class DriverView extends GetView<DriverController> {
             const SizedBox(height: 10),
             const Text("Passez en ligne pour voir vos missions.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 40),
-            SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: () => controller.toggleStatus(true), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00A86B), foregroundColor: Colors.white), child: const Text("PASSER EN LIGNE")))
+            SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: () => controller.toggleStatus(true), style: ElevatedButton.styleFrom(backgroundColor: AppColors.generalColor, foregroundColor: Colors.white), child: const Text("PASSER EN LIGNE")))
           ]),
         ),
       ),
@@ -96,7 +98,7 @@ class DriverView extends GetView<DriverController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("EN COURS DE LIVRAISON", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
+                    const Text("EN COURS DE LIVRAISON", style: TextStyle(color:AppColors.Orange, fontWeight: FontWeight.bold, fontSize: 12)),
                     Text(mission.clientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20), overflow: TextOverflow.ellipsis),
                   ],
                 ),
@@ -122,9 +124,9 @@ class DriverView extends GetView<DriverController> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: controller.reportIssue,
-                  icon: const Icon(Icons.warning_amber, color: Colors.orange),
-                  label: const Text("SIGNALER", style: TextStyle(color: Colors.orange)),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: const BorderSide(color: Colors.orange)),
+                  icon: const Icon(Icons.warning_amber, color: AppColors.Orange),
+                  label: const Text("SIGNALER", style: TextStyle(color: AppColors.Orange)),
+                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: const BorderSide(color:AppColors.Orange)),
                 ),
               ),
             ],
@@ -143,7 +145,7 @@ class DriverView extends GetView<DriverController> {
               onPressed: controller.arriveAtClient,
               icon: const Icon(Icons.flag),
               label: const Text("J'Y SUIS - VALIDER"),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00A86B), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15)),
+              style: ElevatedButton.styleFrom(backgroundColor:  AppColors.generalColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15)),
             ),
           ),
         ],

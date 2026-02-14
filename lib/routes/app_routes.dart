@@ -1,5 +1,6 @@
 abstract class Routes {
   static const LOGIN = '/login';
+  static const PASSWORDFORGET='/passwordforget';
   // DRIVER
   static const DRIVER_SAFETY = '/driver/safety';
   static const DRIVER_HOME = '/driver/home';
@@ -20,4 +21,11 @@ abstract class Routes {
   static const SESSION='/manager/session';
   static const DETAILSESSION='/manager/session/detail';
   static const DETAILPRODUIT='/manager/detailproduit';
+  static const EDITPROFILE='/manager/edit_profile';
+  static const DETAILMAGASINSTOCK='/manager/detail_magasin_stock';
+  static const ORDERDETAIL='/manager/order_detail';
+  static const ORDERASSIGNED='/manager/orderassigned';
+
+
+
 }

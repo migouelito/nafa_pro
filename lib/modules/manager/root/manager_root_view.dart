@@ -3,14 +3,10 @@ import 'package:get/get.dart';
 import 'manager_root_controller.dart';
 import '../dashboard/views/manager_view.dart';
 import '../orders/dispatch_view.dart';
-import '../fleet/views/fleet_view.dart';
 import '../stock/views/stock_view.dart';
-import '../finance/views/finance_view.dart';
 import '../dashboard/controllers/manager_controller.dart';
 import '../orders/dispatch_controller.dart';
-import '../fleet/controllers/fleet_controller.dart';
 import '../stock/controllers/stock_controller.dart';
-import '../finance/controllers/finance_controller.dart';
 import '../../appColors/appColors.dart';
 import '../profil/profil_view.dart';
 import '../profil/profil_controller.dart';
@@ -24,22 +20,18 @@ class ManagerRootView extends GetView<ManagerRootController> {
     const isDarkMode = false; 
 
     // Listes mises à jour avec "Profil"
-    final List<String> _titles = ['Accueil', 'Dispatch', 'Flotte', 'Stock', 'Finance', 'Profil'];
+    final List<String> _titles = ['Accueil', 'Dispatch','Stock', 'Profil'];
     final List<IconData> _activeIcons = [
       Icons.home, 
       Icons.alt_route, 
-      Icons.map, 
       Icons.inventory_2, 
-      Icons.account_balance_wallet,
-      Icons.person // Icône Profil active
+      Icons.person 
     ];
     final List<IconData> _inactiveIcons = [
       Icons.home_outlined, 
       Icons.alt_route_outlined, 
-      Icons.map_outlined, 
       Icons.inventory_2_outlined, 
-      Icons.account_balance_wallet_outlined,
-      Icons.person_outline // Icône Profil inactive
+      Icons.person_outline 
     ];
 
     return Obx(
@@ -115,15 +107,9 @@ class ManagerRootView extends GetView<ManagerRootController> {
         Get.lazyPut<DispatchController>(() => DispatchController());
         return const DispatchView();
       case 2:
-        Get.lazyPut<FleetController>(() => FleetController());
-        return const FleetView();
-      case 3:
         Get.lazyPut<StockController>(() => StockController());
         return const StockView();
-      case 4:
-        Get.lazyPut<FinanceController>(() => FinanceController());
-        return const FinanceView();
-      case 5: // Ajout du cas Profil
+      case 3:
         Get.lazyPut<ProfilController>(() => ProfilController());
         return const ProfilView();
       default:

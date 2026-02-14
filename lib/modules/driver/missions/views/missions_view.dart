@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/missions_controller.dart';
+import '../../../appColors/appColors.dart';
 
 class MissionsView extends GetView<MissionsController> {
   const MissionsView({super.key});
@@ -14,7 +15,7 @@ class MissionsView extends GetView<MissionsController> {
         itemCount: controller.missions.length,
         itemBuilder: (context, index) {
           final m = controller.missions[index];
-          if (m.status == 'DELIVERED') return const SizedBox.shrink(); // Masquer si livré
+          if (m.status == 'DELIVERED') return const SizedBox.shrink(); 
 
           return Card(
             elevation: 4,

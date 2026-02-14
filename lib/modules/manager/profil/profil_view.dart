@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'profil_controller.dart';
 import '../../appColors/appColors.dart';
-// import '../../../routes/app_routes.dart'; 
-// import '../../wallet/wallet_screen.dart';
-// import '../language_screen.dart';
-// import '../support_screen.dart';
+import '../../../routes/app_routes.dart';
 
 class ProfilView extends GetView<ProfilController> {
   const ProfilView({super.key});
@@ -13,101 +11,173 @@ class ProfilView extends GetView<ProfilController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FD), // Couleur de fond plus douce
       appBar: AppBar(
+        elevation: 0,
         backgroundColor: AppColors.generalColor,
-        title: const Text("Mon Profil", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+        title: const Text(
+          "MON COMPTE",
+          style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 16, letterSpacing: 1.5),
+        ),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit ,color: Colors.white),
-            onPressed: () 
-            {
-              //Get.toNamed(Routes.EDITPROFILE);
-            },
+            icon:  Icon(PhosphorIconsStyle.regular == null ? Icons.edit : PhosphorIcons.pencilLine(), color: Colors.white),
+            onPressed: () => Get.toNamed(Routes.EDITPROFILE),
           )
         ],
       ),
       body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         child: Column(
           children: [
-            const SizedBox(height: 20),
             _buildProfileHeader(context),
-            const SizedBox(height: 30),
-            
-            // ⚡ SEULEMENT ADRESSES UTILISE LES ROUTES GETX
-            _buildMenuItemWithRoute(Icons.location_on, "Mes Adresses"," Routes.ADDRESSLIST"),
-            
-            // LE RESTE RESTE EN NAVIGATION CLASSIQUE
-            // _buildMenuItemWithNav(context, Icons.wallet, "Portefeuille & Parrainage", "const WalletScreen()"),
-            // _buildMenuItemWithNav(context, Icons.language, "Langue (Français)", "const LanguageScreen()"),
-            // _buildMenuItemWithNav(context, Icons.help_outline, "Aide & Support", "const SupportScreen()"),
-            
-            const Divider(),
-            
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text("Déconnexion", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-              onTap: () => controller.confirmLogout(),
-            ),
-            
             const SizedBox(height: 20),
-            Text("Version ${controller.version}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle("ADMINISTRATION"),
+                  _buildMenuContainer([
+                    _buildMenuItem(PhosphorIcons.usersThree(PhosphorIconsStyle.fill), "Clients et Partenaires", Routes.MANAGER_CLIENTS),
+                    _buildMenuItem(PhosphorIcons.gearSix(PhosphorIconsStyle.fill), "Prix et commissions", Routes.MANAGER_SETTINGS),
+                  ]),
+                  
+                  const SizedBox(height: 25),
+                  _buildSectionTitle("ACTIVITÉS & FLOTTE"),
+                  _buildMenuContainer([
+                    _buildMenuItem(PhosphorIcons.wallet(PhosphorIconsStyle.fill), "Finances & Portefeuille", Routes.MANAGER_SETTINGS),
+                    _buildMenuItem(PhosphorIcons.mapTrifold(PhosphorIconsStyle.fill), "Suivi Direct (Géo)", Routes.MANAGER_FLEET),
+                  ]),
+                  
+                  const SizedBox(height: 25),
+                  _buildSectionTitle("SÉCURITÉ"),
+                  _buildMenuContainer([
+                    _buildLogoutItem(),
+                  ]),
+                  
+                  const SizedBox(height: 30),
+                  Center(
+                    child: Column(
+                      children: [
+                        Text("Version ${controller.version}", style: TextStyle(color: Colors.grey.shade400, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                        const SizedBox(height: 5),
+                        const Text("NAFAGAZ PRO - ELITE IT PARTNERS", style: TextStyle(color: Colors.grey, fontSize: 8, fontWeight: FontWeight.w900)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Widget pour la navigation par Route Nommée (GetX)
-  Widget _buildMenuItemWithRoute(IconData icon, String title, String routeName) {
+  // Conteneur arrondi pour regrouper les items
+  Widget _buildMenuContainer(List<Widget> items) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 8)),
+        ],
+      ),
+      child: Column(children: items),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, bottom: 10),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.grey.shade500, letterSpacing: 1.2),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(IconData icon, String title, String routeName) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.generalColor),//Colors.black54),
-      title: Text(title),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: AppColors.generalColor.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, color: AppColors.generalColor, size: 22),
+      ),
+      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF2D3436))),
+      trailing: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey.shade300),
       onTap: () => Get.toNamed(routeName),
     );
   }
 
-  // Widget pour la navigation classique (Navigator)
-  Widget _buildMenuItemWithNav(BuildContext context, IconData icon, String title, Widget targetPage) {
+  Widget _buildLogoutItem() {
     return ListTile(
-      leading: Icon(icon, color: AppColors.generalColor),//Colors.black54),
-      title: Text(title),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => targetPage)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+        child:  Icon(PhosphorIcons.power(PhosphorIconsStyle.bold), color: Colors.red, size: 22),
+      ),
+      title: const Text("Déconnexion", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.red)),
+      onTap: () => controller.confirmLogout(),
     );
   }
 
   Widget _buildProfileHeader(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              CircleAvatar(
-                radius: 50, 
-                backgroundColor: AppColors.generalColor, 
-                child: const Text("MK", style: TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold))
-              ),
-              GestureDetector(
-                onTap: () 
-                {
-                  //Get.toNamed(Routes.EDITPROFILE);
-                },
-                child: const CircleAvatar(
-                  radius: 15, 
-                  backgroundColor: Colors.white, 
-                  child: Icon(Icons.edit, size: 16, color: Colors.black)
+    return Container(
+      padding: const EdgeInsets.only(bottom: 30),
+      decoration: BoxDecoration(
+        color: AppColors.generalColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  child: CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.grey.shade100,
+                    child: Text(
+                      controller.userName.isNotEmpty ? controller.userName.substring(0, 1).toUpperCase() : "U",
+                      style: TextStyle(fontSize: 32, color: AppColors.generalColor, fontWeight: FontWeight.w900),
+                    ),
+                  ),
                 ),
+               const CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.Orange,
+                  child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            Text(
+              controller.userName.toUpperCase(),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+            ),
+            const SizedBox(height: 5),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+              child: Text(
+                controller.userPhone,
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(controller.userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text(controller.userPhone, style: const TextStyle(color: Colors.grey)),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

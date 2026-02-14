@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'routes/app_pages.dart';
+import 'package:intl/date_symbol_data_local.dart'; 
 import 'package:nafa_pro/modules/splash/splash_screen.dart';
-void main() {
+void main() async{
+    await initializeDateFormatting('fr_FR', null);
+
   runApp(const NafaProApp());
 }
 

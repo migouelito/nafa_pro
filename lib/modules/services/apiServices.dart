@@ -364,6 +364,36 @@ Future<List<Map<String, dynamic>>?> getStocks() async {
 }
 
 
+Future<Map<String, dynamic>?> getStockDetail(String idStock) async {
+  final token = await getAccessToken();
+  if (token == null) return null;
+
+  try {
+    final uri = Uri.parse('$baseUrl/api/stock/$idStock/retreive/');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("Stock récupéré : $data");
+      return data;
+    } else {
+      print('Erreur serveur : ${response.statusCode} => ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération du stock: $e');
+    return null;
+  }
+}
+
+
 Future<bool> createMouvement(Map<String, dynamic> mouvementData) async {
   final token = await getAccessToken();
   if (token == null) return false;
@@ -484,39 +514,9 @@ Future<bool> updateMouvement(String id, Map<String, dynamic> mouvementData) asyn
   }
 }
 
-/// updateMouvement prend l'id du mouvement et les données à mettre à jour
-// Future<bool> updateMouvement(String idMouvement, Map<String, dynamic> mouvementData) async {
-//   final token = await getAccessToken();
-//   if (token == null) return false;
 
-//   try {
-//     // URL corrigée avec http et id dynamique
-//     final uri = Uri.parse('$baseUrl/api/mouvement/$idMouvement/update/');
-
-//     final response = await http.put(
-//       uri,
-//       headers: {
-//         "Content-Type": "application/json",
-//         "Authorization": "Bearer $token",
-//       },
-//       body: json.encode(mouvementData),
-//     );
-
-//     if (response.statusCode == 200 || response.statusCode == 201) {
-//       print('Mouvement mis à jour avec succès : ${response.body}');
-//       return true;
-//     } else {
-//       print('Erreur serveur : ${response.statusCode} => ${response.body}');
-//       return false;
-//     }
-//   } catch (e) {
-//     print('Erreur lors de la mise à jour du mouvement: $e');
-//     return false;
-//   }
-// }
 
 //=================Methode pour créer une session=====================
-
 Future<bool> createSession({
   required List<Map<String, dynamic>> items,
 }) async {
@@ -655,9 +655,8 @@ Future<Map<String, dynamic>?> clotureSession(
 // Fonction utilitaire pour gérer les nombres invalides du backend (-9223372036854776000)
 dynamic _parseBigInt(dynamic value) {
   if (value == null) return 0;
-  // Si la valeur est trop grande pour un int standard (64-bit signed limit)
   if (value is int && (value < -2147483648 || value > 2147483647)) {
-    return 0; // Ou return value.toString() si tu veux juste l'afficher
+    return 0; 
   }
   return value;
 }
@@ -691,6 +690,155 @@ Future<Map<String, dynamic>?> retrieveDetail(String idsession) async {
 }
 
 
+Future<List<dynamic>?> fetchCommandes() async {
+  final token = await getAccessToken();
+  if (token == null) return null;
+
+  try {
+    // URL pour récupérer la liste des commandes de l'utilisateur
+    final uri = Uri.parse('$baseUrl/api/commandes/list'); 
+
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      print('Erreur serveur : ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération : $e');
+    return null;
+  }
+}
+
+Future<Map<String, dynamic>?> fetchCommandeDetail(String idCommande) async {
+  final token = await getAccessToken();
+  if (token == null) return null;
+
+  try {
+
+    final uri = Uri.parse('$baseUrl/api/commandes/${idCommande}/retrieve/'); 
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // On décode l'objet unique (Map)
+      print("cool details comande");
+      return json.decode(response.body) as Map<String, dynamic>;
+    } else {
+      print('Erreur serveur : ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération : $e');
+    return null;
+  }
+}
+
+Future<Map<String, dynamic>?> fetchDeliver(String idCommande) async {
+  final token = await getAccessToken();
+  if (token == null) return null;
+
+  try {
+    // Suppression des accolades inutiles dans l'URL
+    final uri = Uri.parse('$baseUrl/api/commandes/$idCommande/get_deliver/'); 
+    
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final dynamic data = json.decode(response.body);
+      
+      // Sécurité : Si l'API renvoie une liste, on prend le premier élément
+      if (data is List && data.isNotEmpty) {
+        return data.first as Map<String, dynamic>;
+      } else if (data is Map) {
+        return data as Map<String, dynamic>;
+      }
+      return null;
+    } else {
+      print('Erreur serveur fetchDeliver : ${response.statusCode} => ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération du deliver : $e');
+    return null;
+  }
+}
+ 
+
+Future<bool> dispatchSession({
+  required String commandeId, 
+  required String sessionId,  
+  required List<String> itemIds, $
+}) async {
+  final token = await getAccessToken();
+  final userId = await getUserId();
+
+  if (token == null || userId == null) {
+    print("Authentification requise");
+    return false;
+  }
+
+  try {
+    // Injection de l'ID de la commande dans l'URL
+    final uri = Uri.parse(
+      '$baseUrl/api/commandes/$commandeId/attribut/',
+    );
+
+    // Préparation du corps de la requête
+    final requestBody = {
+      "session_id": sessionId,
+      "items_ids": itemIds.map((id) => {"item_id": id}).toList(),
+    };
+
+    print("URL : $uri");
+    print("Requête envoyée : ${jsonEncode(requestBody)}");
+
+    final response = await http.post(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode(requestBody),
+    );
+
+    print("Status Code : ${response.statusCode}");
+    print("Response Body : ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    }
+
+    final error = jsonDecode(response.body);
+    print("Erreur API : $error");
+    return false;
+
+  } catch (e) {
+    print("Exception dispatchSession : $e");
+    return false;
+  }
+}
+
+ 
 }
 
 

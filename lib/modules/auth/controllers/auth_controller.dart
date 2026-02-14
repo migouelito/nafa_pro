@@ -11,67 +11,64 @@ class AuthController extends GetxController {
   final passwordController = TextEditingController();
 
   var isPasswordHidden = true.obs;
+  
+  // Nouveaux observables pour les erreurs
+  var phoneError = "".obs;
+  var passwordError = "".obs;
 
   void togglePasswordVisibility() {
     isPasswordHidden.value = !isPasswordHidden.value;
   }
 
   bool validateFields() {
+    // Réinitialiser les erreurs
+    phoneError.value = "";
+    passwordError.value = "";
+
+    bool isValid = true;
+
     if (matriculeController.text.trim().isEmpty) {
-      Get.snackbar("Erreur", "Veuillez entrer votre matricule",
-          backgroundColor: Colors.red, colorText: Colors.white);
-      return false;
+      phoneError.value = "Veuillez entrer votre numéro";
+      isValid = false;
     }
     if (passwordController.text.trim().isEmpty) {
-      Get.snackbar("Erreur", "Veuillez entrer votre mot de passe",
-          backgroundColor: Colors.red, colorText: Colors.white);
-      return false;
+      passwordError.value = "Veuillez entrer votre mot de passe";
+      isValid = false;
     }
-    return true;
+    return isValid;
   }
 
- Future<void> login() async {
-  if (!validateFields()) return;
+  Future<void> login() async {
+    if (!validateFields()) return;
 
-  try {
-    LoadingModal.show();
+    try {
+      LoadingModal.show();
+      
+      phoneError.value = "";
+      passwordError.value = "";
 
-    final dataconnexion = {
-      "phone": "+226${matriculeController.text.trim().toUpperCase()}",
-      "password": passwordController.text.trim(),
-    };
+      final dataconnexion = {
+        "phone": "+226${matriculeController.text.trim()}",
+        "password": passwordController.text.trim(),
+      };
 
-    final result = await apiService.login(dataconnexion);
-      print(result);
-    print("Résultat login: $result");
+      final result = await apiService.login(dataconnexion);
 
-    if (result) {
-      // Succès : on ferme le loader et on change de page
+      if (result) {
+        LoadingModal.hide();
+        Get.offAllNamed('/manager/home');
+      } else {
+        LoadingModal.hide(); 
+        phoneError.value = " "; 
+        passwordError.value = "Identifiants incorrects";
+      }
+    } catch (e) {
       LoadingModal.hide();
-      Get.offAllNamed('/manager/home');
-    } else {
-      LoadingModal.hide(); 
       Alerte.show(
-        title: "Erreur d'authentification",
-        message: "Matricule ou mot de passe incorrect",
-        imagePath: "assets/images/error.png",
+        title: "Erreur",
+        message: "Problème de communication avec le serveur.",
         color: Colors.red,
       );
     }
-  } catch (e) {
-    LoadingModal.hide();
-    Alerte.show(
-      title: "Erreur de connexion",
-      message: "Problème de communication avec le serveur.",
-      imagePath: "assets/images/error.png",
-      color: Colors.red,
-    );
-  }
-}
-  @override
-  void onClose() {
-    matriculeController.dispose();
-    passwordController.dispose();
-    super.onClose();
   }
 }

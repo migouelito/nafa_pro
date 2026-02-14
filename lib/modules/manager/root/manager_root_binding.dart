@@ -3,9 +3,8 @@ import 'package:get/get.dart';
 import 'manager_root_controller.dart';
 import '../dashboard/controllers/manager_controller.dart';
 import '../orders/dispatch_controller.dart';
-import '../fleet/controllers/fleet_controller.dart';
+import '../fleet/fleet_controller.dart';
 import '../stock/controllers/stock_controller.dart';
-import '../finance/controllers/finance_controller.dart';
 import '../settings/controllers/settings_controller.dart';
 
 class ManagerRootBinding extends Bindings {
@@ -18,7 +17,6 @@ class ManagerRootBinding extends Bindings {
     Get.lazyPut<DispatchController>(() => DispatchController());
     Get.lazyPut<FleetController>(() => FleetController());
     Get.lazyPut<StockController>(() => StockController());
-    Get.lazyPut<FinanceController>(() => FinanceController());
     Get.lazyPut<SettingsController>(() => SettingsController());
   }
 }

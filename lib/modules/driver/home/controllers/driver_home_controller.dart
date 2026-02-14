@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nafa_pro/routes/app_routes.dart';
 import '../../../questionModal/questionModal.dart';
+import '../../../appColors/appColors.dart';
 
 // MODÈLE SIMPLE POUR LE STOCK
 class StockItem {
-  final String brand; // Sodigaz, Total, Oryx
-  final String type;  // B6, B12
-  final bool isFull;  // true = Pleine, false = Vide
+  final String brand; 
+  final String type;  
+  final bool isFull;  
   int quantity;
 
   StockItem(this.brand, this.type, this.isFull, this.quantity);
@@ -28,7 +29,7 @@ class DriverHomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadInitialStock(); // Simulation du chargement au dépôt
+    _loadInitialStock(); 
   }
 
   // Simulation : Ce que le gestionnaire a mis dans le tricycle ce matin
@@ -39,7 +40,6 @@ class DriverHomeController extends GetxController {
       StockItem("Sodigaz", "B6", true, 3),
       StockItem("Total", "B12", true, 4),
       StockItem("Oryx", "B6", true, 2),
-      
       // VIDES (Déjà récupérées ou stock tampon)
       StockItem("Sodigaz", "B12", false, 1), 
     ];
@@ -50,7 +50,6 @@ class DriverHomeController extends GetxController {
   int get totalEmptyBottles => truckStock.where((i) => !i.isFull).fold(0, (sum, i) => sum + i.quantity);
 
   void changeTab(int index) => currentIndex.value = index;
-
   // --- AFFICHER LE DÉTAIL DU STOCK (BOTTOM SHEET) ---
   void showStockDetails() {
     Get.bottomSheet(
@@ -78,7 +77,6 @@ class DriverHomeController extends GetxController {
               ],
             ),
             const SizedBox(height: 20),
-            
             // ONGLETS VISUELS
             Row(
               children: [
@@ -89,7 +87,6 @@ class DriverHomeController extends GetxController {
             ),
             const SizedBox(height: 15),
             const Divider(),
-            
             // LISTE DÉTAILLÉE
             Flexible(
               child: ListView(
@@ -102,7 +99,7 @@ class DriverHomeController extends GetxController {
                       contentPadding: EdgeInsets.zero,
                       leading: CircleAvatar(
                         backgroundColor: item.isFull ? Colors.green.shade50 : Colors.orange.shade50,
-                        child: Icon(item.isFull ? Icons.propane : Icons.sync_alt, color: item.isFull ? Colors.green : Colors.orange, size: 20),
+                        child: Icon(item.isFull ? Icons.propane : Icons.sync_alt, color: item.isFull ? AppColors.generalColor : AppColors.Orange, size: 20),
                       ),
                       title: Text("${item.brand} ${item.type}", style: const TextStyle(fontWeight: FontWeight.bold)),
                       trailing: Text(
@@ -149,20 +146,20 @@ class DriverHomeController extends GetxController {
     final passwordController = TextEditingController();
     Get.defaultDialog(
       title: "SÉCURITÉ",
-      content: Column(children: [const Icon(Icons.fingerprint, size: 50, color: Color(0xFF00A86B)), const SizedBox(height: 20), TextField(controller: passwordController, obscureText: true, textAlign: TextAlign.center, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: "Code PIN"))]),
+      content: Column(children: [ Icon(Icons.fingerprint, size: 50, color:AppColors.generalColor), const SizedBox(height: 20), TextField(controller: passwordController, obscureText: true, textAlign: TextAlign.center, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: "Code PIN"))]),
       textConfirm: "VALIDER", textCancel: "Annuler", confirmTextColor: Colors.white, buttonColor: Colors.black,
       onConfirm: () { if (passwordController.text == "1234") { Get.back(); _showWithdrawalConfirmation(); } else { Get.snackbar("Erreur", "Code incorrect", backgroundColor: Colors.red, colorText: Colors.white); } }
     );
   }
   void _showWithdrawalConfirmation() {
-    Get.defaultDialog(title: "VALIDATION", content: Column(children: [const Icon(Icons.verified, size: 60, color: Colors.green), Text("${availableBonus.value} F", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold))]), textConfirm: "ENCAISSER", textCancel: "Annuler", confirmTextColor: Colors.white, buttonColor: const Color(0xFF00A86B), onConfirm: () { availableBonus.value = 0; Get.back(); Get.snackbar("Succès", "Retrait effectué."); });
+    Get.defaultDialog(title: "VALIDATION", content: Column(children: [ Icon(Icons.verified, size: 60, color:AppColors.generalColor), Text("${availableBonus.value} F", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold))]), textConfirm: "ENCAISSER", textCancel: "Annuler", confirmTextColor: Colors.white, buttonColor: const Color(0xFF00A86B), onConfirm: () { availableBonus.value = 0; Get.back(); Get.snackbar("Succès", "Retrait effectué."); });
   }
 void logout() {
   DialogLogout.show(
     title: "Déconnexion",
     message: "Voulez-vous vraiment vous déconnecter de votre compte NAFA PRO ?",
     imagePath: "assets/images/logout.png", // Utilisation de votre image test.png
-    color: const Color(0xFF00A86B), // Vert Nafa pour le bouton "Oui"
+    color: AppColors.generalColor, // Vert Nafa pour le bouton "Oui"
     onConfirm: () {
       // Redirection vers l'écran de login
       Get.offAllNamed(Routes.LOGIN);

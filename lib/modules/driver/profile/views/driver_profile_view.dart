@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nafa_pro/modules/appColors/appColors.dart';
 import 'package:nafa_pro/routes/app_routes.dart';
 import '../../home/controllers/driver_home_controller.dart';
 
@@ -10,12 +11,12 @@ class DriverProfileView extends GetView<DriverHomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("MON PROFIL"), centerTitle: true, elevation: 0, backgroundColor: Colors.white, foregroundColor: Colors.black),
+      appBar: AppBar(title: const Text("MON PROFIL"),  elevation: 0, backgroundColor: Colors.white, foregroundColor: Colors.black),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const CircleAvatar(radius: 50, backgroundColor: Color(0xFF00A86B), child: Icon(Icons.person, size: 50, color: Colors.white)),
+             CircleAvatar(radius: 50, backgroundColor: AppColors.generalColor, child: Icon(Icons.person, size: 50, color: Colors.white)),
             const SizedBox(height: 15),
             Text(controller.driverName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             Text("Livreur Tricycle ⭐ 4.8", style: TextStyle(color: Colors.grey.shade600)),

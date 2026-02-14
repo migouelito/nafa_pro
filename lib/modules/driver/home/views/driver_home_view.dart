@@ -4,6 +4,8 @@ import 'package:nafa_pro/modules/driver/home/controllers/driver_home_controller.
 import 'package:nafa_pro/modules/driver/overview/views/driver_overview_view.dart';
 import 'package:nafa_pro/modules/driver/dashboard/views/driver_view.dart';
 import 'package:nafa_pro/modules/driver/profile/views/driver_profile_view.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../../appColors/appColors.dart';
 
 class DriverHomeView extends GetView<DriverHomeController> {
   const DriverHomeView({super.key});
@@ -13,7 +15,7 @@ class DriverHomeView extends GetView<DriverHomeController> {
     return Scaffold(
       body: Obx(() => IndexedStack(
         index: controller.currentIndex.value,
-        children: [ // J'ai retiré le const ici pour éviter l'erreur de compilation
+        children: [
           const DriverOverviewView(),
           const DriverView(),
           const DriverProfileView(),
@@ -23,21 +25,21 @@ class DriverHomeView extends GetView<DriverHomeController> {
         backgroundColor: Color(0XFFFFFFFF),
         selectedIndex: controller.currentIndex.value,
         onDestinationSelected: controller.changeTab,
-        indicatorColor: const Color(0xFF00A86B).withOpacity(0.2),
-        destinations: const [
+        indicatorColor: AppColors.generalColor.withOpacity(0.2),
+        destinations:  [
           NavigationDestination(
-            icon: Icon(Icons.grid_view),
-            selectedIcon: Icon(Icons.grid_view, color: Color(0xFF00A86B)),
+            icon: Icon(PhosphorIcons.house()),
+            selectedIcon: Icon(PhosphorIcons.house(PhosphorIconsStyle.fill), color:AppColors.generalColor),
             label: 'Accueil',
           ),
           NavigationDestination(
             icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map, color: Color(0xFF00A86B)),
+            selectedIcon: Icon(Icons.map, color:AppColors.generalColor),
             label: 'Missions',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: Color(0xFF00A86B)),
+            selectedIcon: Icon(Icons.person, color: AppColors.generalColor),
             label: 'Profil',
           ),
         ],
